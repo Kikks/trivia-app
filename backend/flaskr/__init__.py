@@ -39,21 +39,25 @@ def create_app(test_config=None):
 
     @app.route("/categories")
     def get_categories():
-        categories = {}
+        try:
+            categories = {}
 
-        all_categories = [item.format() for item in Category.query.all()]
+            all_categories = [item.format() for item in Category.query.all()]
 
-        for category in all_categories:
-            categories["{}".format(category["id"])] = category["type"]
+            for category in all_categories:
+                categories["{}".format(category["id"])] = category["type"]
 
-        return jsonify(
-            {
-                "success": True,
-                "message": "Categories fetched successfully.",
-                "categories": categories,
-                "total_categories": len(categories),
-            }
-        )
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Categories fetched successfully.",
+                    "categories": categories,
+                    "total_categories": len(categories),
+                }
+            )
+        except Exception as error:
+            print(error)
+            abort(500)
 
     @app.route("/questions")
     def get_questions():
@@ -65,13 +69,8 @@ def create_app(test_config=None):
                     func.lower(Question.question).like("%{}%".format(search.lower())),
                 )
                 .order_by(Question.id.desc())
-                .all()
+                .paginate(page=page, per_page=QUESTIONS_PER_PAGE, error_out=True)
             )
-
-            paginated_questions = paginate_table(page, QUESTIONS_PER_PAGE, questions)
-
-            if not len(questions) == 0 and len(paginated_questions) == 0:
-                abort(404)
 
             categories = {}
             all_categories = [item.format() for item in Category.query.all()]
@@ -82,13 +81,14 @@ def create_app(test_config=None):
                 {
                     "success": True,
                     "message": "Questions fetched successfully.",
-                    "questions": paginated_questions,
-                    "total_questions": len(questions),
+                    "questions": [question.format() for question in questions.items],
+                    "total_questions": questions.total,
                     "categories": categories,
                     "current_category": "All",
                 }
             )
-        except:
+        except Exception as error:
+            print(error)
             abort(404)
 
     @app.route("/questions/<int:question_id>", methods=["DELETE"])
@@ -110,7 +110,8 @@ def create_app(test_config=None):
                 }
             )
 
-        except:
+        except Exception as error:
+            print(error)
             abort(404)
 
     @app.route("/questions", methods=["POST"])
@@ -143,7 +144,8 @@ def create_app(test_config=None):
                 }
             )
 
-        except:
+        except Exception as error:
+            print(error)
             abort(400)
 
     @app.route("/categories/<int:category_id>/questions")

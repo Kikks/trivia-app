@@ -66,10 +66,14 @@ def create_app(test_config=None):
             search = request.args.get("search", "", type=str)
             questions = (
                 Question.query.filter(
-                    func.lower(Question.question).like("%{}%".format(search.lower())),
+                    func.lower(Question.question).like(
+                        "%{}%".format(search.lower())),
                 )
                 .order_by(Question.id.desc())
-                .paginate(page=page, per_page=QUESTIONS_PER_PAGE, error_out=True)
+                .paginate(
+                    page=page,
+                    per_page=QUESTIONS_PER_PAGE, error_out=True
+                )
             )
 
             categories = {}
@@ -81,7 +85,9 @@ def create_app(test_config=None):
                 {
                     "success": True,
                     "message": "Questions fetched successfully.",
-                    "questions": [question.format() for question in questions.items],
+                    "questions": [
+                        question.format() for question in questions.items
+                    ],
                     "total_questions": questions.total,
                     "categories": categories,
                     "current_category": "All",
@@ -94,7 +100,8 @@ def create_app(test_config=None):
     @app.route("/questions/<int:question_id>", methods=["DELETE"])
     def delete_question(question_id):
         try:
-            question = Question.query.filter(Question.id == question_id).one_or_none()
+            question = Question.query.filter(
+                Question.id == question_id).one_or_none()
 
             if not question:
                 abort(404)
@@ -104,9 +111,8 @@ def create_app(test_config=None):
             return jsonify(
                 {
                     "success": True,
-                    "message": "Question with id: {} deleted successfully.".format(
-                        question_id
-                    ),
+                    "message": "Question with id: {} deleted successfully."
+                    .format(question_id),
                 }
             )
 
@@ -123,7 +129,7 @@ def create_app(test_config=None):
         difficulty = body.get("difficulty", None)
         category = body.get("category", None)
 
-        if (not question) or (not answer) or (not difficulty) or (not category):
+        if not question or not answer or not difficulty or not category:
             abort(400)
 
         try:
@@ -166,7 +172,8 @@ def create_app(test_config=None):
                 .all()
             )
 
-            paginated_questions = paginate_table(page, QUESTIONS_PER_PAGE, questions)
+            paginated_questions = paginate_table(
+                page, QUESTIONS_PER_PAGE, questions)
 
             if not len(questions) == 0 and len(paginated_questions) == 0:
                 abort(404)
@@ -231,30 +238,45 @@ def create_app(test_config=None):
 
     @app.errorhandler(404)
     def not_found(error):
-        return jsonify({"success": False, "error": 404, "message": "Not found."}), 404
+        return jsonify(
+            {
+                "success": False,
+                "error": 404,
+                "message": "Not found."
+            }
+        ), 404
 
     @app.errorhandler(400)
     def bad_request(error):
-        return jsonify({"success": False, "error": 400, "message": "Bad Request."}), 400
+        return jsonify(
+            {
+                "success": False,
+                "error": 400,
+                "message": "Bad Request."
+            }
+        ), 400
 
     @app.errorhandler(500)
     def server_error(error):
         return (
-            jsonify({"success": False, "error": 500, "message": "Server error."}),
+            jsonify({"success": False, "error": 500,
+                    "message": "Server error."}),
             500,
         )
 
     @app.errorhandler(422)
     def unprocessable(error):
         return (
-            jsonify({"success": False, "error": 422, "message": "Unprocessable."}),
+            jsonify({"success": False, "error": 422,
+                    "message": "Unprocessable."}),
             422,
         )
 
     @app.errorhandler(405)
     def method_not_allowed(error):
         return (
-            jsonify({"success": False, "error": 405, "message": "Method not allowed."}),
+            jsonify({"success": False, "error": 405,
+                    "message": "Method not allowed."}),
             405,
         )
 

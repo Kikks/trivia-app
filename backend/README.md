@@ -46,55 +46,248 @@ To run the server, execute:
 flask run --reload
 ```
 
+After that is done, the server should run on [localhost://5000](http://localhost://5000)
+
 The `--reload` flag will detect file changes and restart the server automatically.
 
-## To Do Tasks
+## API Documentation
 
-These are the files you'd want to edit in the backend:
+Below is the documentation for every endpoint exposed by the server.
 
-1. `backend/flaskr/__init__.py`
-2. `backend/test_flaskr.py`
+# `GET '/categories'`
 
-One note before you delve into your tasks: for each endpoint, you are expected to define the endpoint and response data. The frontend will be a plentiful resource because it is set up to expect certain endpoints and response data formats already. You should feel free to specify endpoints in your own way; if you do so, make sure to update the frontend or you will get some unexpected behavior.
-
-1. Use Flask-CORS to enable cross-domain requests and set response headers.
-2. Create an endpoint to handle `GET` requests for questions, including pagination (every 10 questions). This endpoint should return a list of questions, number of total questions, current category, categories.
-3. Create an endpoint to handle `GET` requests for all available categories.
-4. Create an endpoint to `DELETE` a question using a question `ID`.
-5. Create an endpoint to `POST` a new question, which will require the question and answer text, category, and difficulty score.
-6. Create a `POST` endpoint to get questions based on category.
-7. Create a `POST` endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question.
-8. Create a `POST` endpoint to get questions to play the quiz. This endpoint should take a category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions.
-9. Create error handlers for all expected errors including 400, 404, 422, and 500.
-
-## Documenting your Endpoints
-
-You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
-
-### Documentation Example
-
-`GET '/api/v1.0/categories'`
-
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
-- Returns: An object with a single key, `categories`, that contains an object of `id: category_string` key: value pairs.
+- Returns: An object with a success boolean value, a corresponding message, a `categories` dictionary, that contains an object of `id: category_string` key: value pairs and finally, the totalnumber of categories.
 
 ```json
 {
-  "1": "Science",
-  "2": "Art",
-  "3": "Geography",
-  "4": "History",
-  "5": "Entertainment",
-  "6": "Sports"
+    "success": True,
+    "message": "Categories fetched successfully.",
+    "categories": {
+      "1": "Science",
+      "2": "Art",
+      "3": "Geography",
+      "4": "History",
+      "5": "Entertainment",
+      "6": "Sports"
+    },
+    "total_categories": 6,
 }
 ```
 
-## Testing
+# `GET '/questions'`
 
-Write at least one test for the success and at least one error behavior of each endpoint using the unittest library.
+- Request Arguments: `page`, `search`. The search argument can be used to filter questions be a query string. The page argument indicates the page of the query to be returned (defaults to 1)
+- Returns: A paginated list of unfiltered (or filtered if the search argument is included) questions, the available categories, the current category, a response message, a success boolean value and the total number of questions. (maximum of 10 questions per page)
 
-To deploy the tests, run
+```json
+{
+	"categories": {
+		"1": "Science",
+		"2": "Art",
+		"3": "Geography",
+		"4": "History",
+		"5": "Entertainment",
+		"6": "Sports"
+	},
+	"current_category": "All",
+	"message": "Questions fetched successfully.",
+	"questions": [
+		{
+			"answer": "Testing",
+			"category": 1,
+			"difficulty": 1,
+			"id": 25,
+			"question": "Testing"
+		},
+		{
+			"answer": "Blood",
+			"category": 1,
+			"difficulty": 4,
+			"id": 22,
+			"question": "Hematology is a branch of medicine involving the study of what?"
+		},
+		{
+			"answer": "Alexander Fleming",
+			"category": 1,
+			"difficulty": 3,
+			"id": 21,
+			"question": "Who discovered penicillin?"
+		},
+		{
+			"answer": "The Liver",
+			"category": 1,
+			"difficulty": 4,
+			"id": 20,
+			"question": "What is the heaviest organ in the human body?"
+		},
+		{
+			"answer": "Jackson Pollock",
+			"category": 2,
+			"difficulty": 2,
+			"id": 19,
+			"question": "Which American artist was a pioneer of Abstract Expressionism, and a leading exponent of action painting?"
+		},
+		{
+			"answer": "One",
+			"category": 2,
+			"difficulty": 4,
+			"id": 18,
+			"question": "How many paintings did Van Gogh sell in his lifetime?"
+		},
+		{
+			"answer": "Mona Lisa",
+			"category": 2,
+			"difficulty": 3,
+			"id": 17,
+			"question": "La Giaconda is better known as what?"
+		},
+		{
+			"answer": "Agra",
+			"category": 3,
+			"difficulty": 2,
+			"id": 15,
+			"question": "The Taj Mahal is located in which Indian city?"
+		},
+		{
+			"answer": "The Palace of Versailles",
+			"category": 3,
+			"difficulty": 3,
+			"id": 14,
+			"question": "In which royal palace would you find the Hall of Mirrors?"
+		},
+		{
+			"answer": "Lake Victoria",
+			"category": 3,
+			"difficulty": 2,
+			"id": 13,
+			"question": "What is the largest lake in Africa?"
+		}
+	],
+	"success": true,
+	"total_questions": 17
+}
+```
+
+# `DELETE '/questions/{question_id}'`
+
+- Request Arguments: None
+- Query Params: `question_id`. This is the id of the question to be deleted.
+- Returns: An object with a success boolean value, and a corresponding message.
+
+```json
+{
+	"success": true,
+	"message": "Question with id: 1 deleted successfully."
+}
+```
+
+# `POST '/questions`
+
+- Request Arguments: None
+- Request Body: A question string, an answer string, the difficulty of the question to be created and the category (to be gotten from the `GET /categories` endpoint)
+
+```json
+{
+	"question": "This is a sample question",
+	"answer": "This is the answer to the question",
+	"difficulty": 1,
+	"category": 1
+}
+```
+
+- Returns: An object with a success boolean value, and a corresponding message.
+
+```json
+{
+	"success": true,
+	"message": "New question created successfully."
+}
+```
+
+# `GET '/categories/{category_id}/questions'`
+
+- Request Arguments: `page`. The page argument indicates the page of the query to be returned (defaults to 1)
+- Returns: A paginated list of filtered questions based on categories (maximum of 10 questions per page), the available categories, the current category, a response message, a success boolean value and the total number of questions.
+
+```json
+{
+	"categories": {
+		"1": "Science",
+		"2": "Art",
+		"3": "Geography",
+		"4": "History",
+		"5": "Entertainment",
+		"6": "Sports"
+	},
+	"current_category": "Science",
+	"message": "Questions fetched successfully.",
+	"questions": [
+		{
+			"answer": "Testing",
+			"category": 1,
+			"difficulty": 1,
+			"id": 25,
+			"question": "Testing"
+		},
+		{
+			"answer": "Blood",
+			"category": 1,
+			"difficulty": 4,
+			"id": 22,
+			"question": "Hematology is a branch of medicine involving the study of what?"
+		},
+		{
+			"answer": "Alexander Fleming",
+			"category": 1,
+			"difficulty": 3,
+			"id": 21,
+			"question": "Who discovered penicillin?"
+		},
+		{
+			"answer": "The Liver",
+			"category": 1,
+			"difficulty": 4,
+			"id": 20,
+			"question": "What is the heaviest organ in the human body?"
+		}
+	],
+	"success": true,
+	"total_questions": 4
+}
+```
+
+# `POST '/quizzes`
+
+- Request Arguments: None
+- Request Body: A list of questions previously answered and a quiz category dictionary which includes the id and type of the category to ask questions. Pass `{ "type": "", "id": 0 }` to get random questions from all categories.
+
+```json
+{
+	"previous_questions": [25],
+	"quiz_category": { "type": "Science", "id": 1 }
+}
+```
+
+- Returns: An object with a success boolean value, a corresponding message and a random question.
+
+```json
+{
+	"success": true,
+	"message": "New question created successfully.",
+	"question": {
+		"answer": "The Liver",
+		"category": 1,
+		"difficulty": 4,
+		"id": 20,
+		"question": "What is the heaviest organ in the human body?"
+	}
+}
+```
+
+## Tests
+
+To deploy the tests, create a seperate database and then run the following:
 
 ```bash
 dropdb trivia_test
